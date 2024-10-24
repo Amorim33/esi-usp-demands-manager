@@ -23,6 +23,11 @@ export default function Home() {
       router.push("/evaluate-reports");
       return;
     }
+
+    if (email.split("@")[0] === "ccp") {
+      router.push("/manage-demands");
+      return;
+    }
   };
 
   return (
