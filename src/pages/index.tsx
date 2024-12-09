@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { saveSession } from "@/lib/session";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -11,22 +12,34 @@ export default function Home() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log("Login attempt with:", email, password);
 
-    if (email.split("@")[0] === "student") {
-      router.push("/dashboard");
-      return;
+    const response = await fetch("/api/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Login failed");
     }
 
-    if (email.split("@")[0] === "professor") {
-      router.push("/evaluate-reports");
-      return;
-    }
+    const user = await response.json();
+    saveSession(JSON.stringify(user));
 
-    if (email.split("@")[0] === "ccp") {
-      router.push("/manage-demands");
-      return;
+    switch (user.role) {
+      case "STUDENT":
+        router.push("/dashboard");
+        break;
+      case "ADVISOR":
+        router.push("/evaluate-reports");
+        break;
+      case "ADMIN":
+        router.push("/manage-demands");
+        break;
+      default:
+        throw new Error("Invalid user role");
     }
   };
 

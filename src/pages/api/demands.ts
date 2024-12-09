@@ -1,23 +1,29 @@
+import { sql } from "../../lib/db.server";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Dummy demands data
-  const demands = [
-    {
-      id: 1,
-      title: "First Quarter Evaluation",
-      description: "Submit your first quarter report",
-      studentDeadline: "2024-03-31",
-      advisorDeadline: "2024-04-15",
-    },
-    {
-      id: 2,
-      title: "Second Quarter Evaluation",
-      description: "Submit your second quarter report",
-      studentDeadline: "2024-06-30",
-      advisorDeadline: "2024-07-15",
-    },
-  ];
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  try {
+    const demands = await sql`
+      SELECT id, title, description, student_deadline, advisor_deadline
+      FROM demands
+    `;
 
-  res.status(200).json(demands);
+    const formattedDemands = demands.map((demand) => ({
+      ...demand,
+      studentDeadline: new Date(demand.studentDeadline).toLocaleDateString(
+        "en-US"
+      ),
+      advisorDeadline: new Date(demand.advisorDeadline).toLocaleDateString(
+        "en-US"
+      ),
+    }));
+
+    res.status(200).json(formattedDemands);
+  } catch (error) {
+    console.log({ error });
+    res.status(500).json({ error: "Failed to fetch demands" });
+  }
 }

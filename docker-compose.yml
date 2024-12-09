@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: demands-manager
+      POSTGRES_PASSWORD: demands-manager
+      POSTGRES_DB: demands-manager
+
+  postgres-test:
+    image: postgres:16-alpine
+    ports:
+      - 54321:5432
+    environment:
+      POSTGRES_USER: demands-manager
+      POSTGRES_PASSWORD: demands-manager
+      POSTGRES_DB: demands-manager

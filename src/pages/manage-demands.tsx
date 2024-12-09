@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getSession } from "@/lib/session";
 
 type Demand = {
   id: number;
@@ -31,17 +32,34 @@ export default function ManageDemands() {
 
   const handleCreateDemand = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement demand creation logic
-    console.log("Creating demand:", newDemand);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setDemands([...demands, { id: demands.length + 1, ...newDemand }]);
-    setNewDemand({
-      title: "",
-      description: "",
-      studentDeadline: "",
-      advisorDeadline: "",
-    });
+
+    try {
+      const user = JSON.parse(getSession() || "{}");
+
+      const response = await fetch(`/api/create-demand?userId=${user.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newDemand),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create demand");
+      }
+
+      const createdDemand = await response.json();
+      setDemands([...demands, createdDemand]);
+      setNewDemand({
+        title: "",
+        description: "",
+        studentDeadline: "",
+        advisorDeadline: "",
+      });
+    } catch (error) {
+      console.error("Error creating demand:", error);
+      // TODO: Show error to user
+    }
   };
 
   return (
